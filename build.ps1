@@ -1,4 +1,4 @@
-﻿# Builds the widget with the C# compiler that ships with Windows and installs it to %LOCALAPPDATA%\AiUsageWidget.
+# Builds the widget with the C# compiler that ships with Windows and installs it to %LOCALAPPDATA%\AiUsageWidget.
 #   .\build.ps1              build and install
 #   .\build.ps1 -NoInstall   build to bin\ only
 #   .\build.ps1 -Snapshots   also render docs\*.png (uses the cached data in %LOCALAPPDATA%\AiUsageWidget)
@@ -13,7 +13,10 @@ New-Item -ItemType Directory -Force $out, $dest, (Join-Path $dest 'icons') | Out
 
 $refs = 'WPF\PresentationFramework.dll', 'WPF\PresentationCore.dll', 'WPF\WindowsBase.dll', 'System.Xaml.dll', 'System.Web.Extensions.dll' |
     ForEach-Object { "/r:$fw\$_" }
-$files = @("$src\Widget.cs", "$src\Data.cs") + @(Get-ChildItem "$src\BWUI\*.cs" | ForEach-Object { $_.FullName })
+# The app version comes from VERSION; release tags must match it (BWUI DESIGN.md §6.10).
+$version = (Get-Content "$src\VERSION").Trim()
+Set-Content "$out\AppInfo.g.cs" "namespace Bwui { public static class AppInfo { public const string Version = `"$version`"; } }" -Encoding utf8
+$files = @("$src\Widget.cs", "$src\Data.cs", "$out\AppInfo.g.cs") + @(Get-ChildItem "$src\BWUI\*.cs" | ForEach-Object { $_.FullName })
 
 & $csc /nologo /codepage:65001 /optimize+ /target:winexe "/win32manifest:$src\BWUI\bwui.manifest" "/out:$out\AiUsageWidget.exe" @refs @files
 if ($LASTEXITCODE) { throw 'Widget build failed' }

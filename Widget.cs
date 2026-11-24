@@ -93,6 +93,11 @@ namespace AiUsageWidget
 
         // ---------- menu ----------
 
+        protected override UpdateSource Updates
+        {
+            get { return new UpdateSource("byeonggwan", "windows-ai-usage-widget", "AiUsageWidget.exe", "AiUsageStatus.exe"); }
+        }
+
         protected override bool CanRefresh { get { return true; } }
 
         protected override void RefreshNow()

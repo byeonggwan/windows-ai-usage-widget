@@ -19,6 +19,7 @@ Built on [BWUI](https://github.com/byeonggwan/bwui), a small design system for W
 - Sharp on every monitor: it's per-monitor DPI aware.
 - Adapts to your plan: a window your plan doesn't have (for example no 5-hour limit) is not drawn, and a plan without these limits says so ("No usage limit").
 - Lightweight: about 60 MB of memory, almost no CPU. On battery it refreshes half as often. No installer, no runtime to download — it is built with the C# compiler that ships with Windows.
+- Updates itself from this repo's GitHub Releases. Once a day it checks for a new version and shows an update bar; one click installs it after checking the SHA-256. Turn on **Update automatically** in the right-click menu to skip the click.
 - **Never reads, stores, or refreshes login tokens.** It only reads numbers that the official Claude and Antigravity tools already produce.
 
 > Labels follow your Windows display language: Korean, or English for everything else. The screenshots are in Korean (`5시간` = 5-hour, `주간` = weekly, `후 초기화` = until reset).
