@@ -288,6 +288,10 @@ namespace AiUsageWidget
                 StandardOutputEncoding = Encoding.UTF8,
                 WorkingDirectory = Paths.Dir
             };
+            // agy checks for its own updates every 15 minutes and starts the updater in a new
+            // console, which pops up a terminal window and takes focus. The widget only reads
+            // usage, so it never triggers that; agy run by hand still updates itself.
+            psi.EnvironmentVariables["AGY_CLI_DISABLE_AUTO_UPDATE"] = "true";
             using (var p = Process.Start(psi))
             {
                 var so = p.StandardOutput.ReadToEndAsync();
