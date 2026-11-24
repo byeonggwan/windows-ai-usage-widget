@@ -30,7 +30,7 @@ You only need the ones you use; hide the others from the right-click menu.
 ## Install
 
 ```powershell
-git clone https://github.com/<your-account>/windows-ai-usage-widget.git
+git clone https://github.com/byeonggwan/windows-ai-usage-widget.git
 cd windows-ai-usage-widget
 powershell -ExecutionPolicy Bypass -File .\build.ps1
 Start-Process "$env:LOCALAPPDATA\AiUsageWidget\AiUsageWidget.exe"
