@@ -2,21 +2,26 @@
 
 A small, rounded desktop widget for Windows that shows how much of your **Claude**, **OpenAI Codex**, and **Google Antigravity** usage limits are left — the 5-hour window and the weekly window — and when each one resets.
 
+Built on [BWUI](https://github.com/byeonggwan/bwui), a small design system for Windows desktop widgets.
+
 | Bars | Rings |
 |---|---|
 | ![Bar layout](docs/bars.png) | ![Ring layout](docs/rings.png) |
+| ![Bar layout, dark](docs/bars-dark.png) | ![Ring layout, dark](docs/rings-dark.png) |
 
 - Shows **remaining** percentage for the 5-hour and weekly limits, plus time until reset.
 - One click (top-right button) switches between the bar and ring layouts; the choice is remembered.
-- Turns orange at 20% or less and red at 5% or less.
-- Dims and shows "N minutes ago" when data is out of date.
+- At 20% or less a value turns amber with a ⚠ mark, and at 5% or less red with an ⓧ mark, so the status doesn't rely on color alone.
+- Shows "as of N min ago" when data is out of date, and dims it once it's too old to trust; it never hides it.
 - Sits on the desktop behind your windows, hidden from the taskbar and Alt+Tab. Drag it anywhere; the position is remembered.
-- Right-click: switch layout, refresh now, show or hide each service, start with Windows, quit. A hidden service is not fetched at all.
-- Adapts to your plan: a window your plan doesn't have (for example no 5-hour limit) is not drawn, and a plan without these limits shows "사용 한도 없음" (no usage limit).
-- Light: about 50 MB of memory, almost no CPU. No installer, no runtime to download — it is built with the C# compiler that ships with Windows.
+- Light, dark and High Contrast themes. It follows Windows by default; right-click → Theme to pin one.
+- Right-click: switch layout, show or hide each service, refresh now, theme, start with Windows, quit. A hidden service is not fetched at all.
+- Sharp on every monitor: it's per-monitor DPI aware.
+- Adapts to your plan: a window your plan doesn't have (for example no 5-hour limit) is not drawn, and a plan without these limits says so ("No usage limit").
+- Lightweight: about 60 MB of memory, almost no CPU. On battery it refreshes half as often. No installer, no runtime to download — it is built with the C# compiler that ships with Windows.
 - **Never reads, stores, or refreshes login tokens.** It only reads numbers that the official Claude and Antigravity tools already produce.
 
-> The widget's labels are in Korean (`5시간` = 5 hours, `주간` = weekly, `후 초기화` = until reset).
+> Labels follow your Windows display language: Korean, or English for everything else. The screenshots are in Korean (`5시간` = 5-hour, `주간` = weekly, `후 초기화` = until reset).
 
 ## Requirements
 
@@ -43,9 +48,9 @@ Start-Process "$env:LOCALAPPDATA\AiUsageWidget\AiUsageWidget.exe"
 | `AiUsageWidget.exe` | The desktop widget |
 | `AiUsageStatus.exe` | Optional Claude Code status line handler (see below) |
 
-If the Claude or Codex desktop app is running during the build, its icon is copied for the widget; otherwise a colored dot is shown. Antigravity's icon is read from `Antigravity.exe` at runtime. No logos are included in this repository.
+If the Claude or Codex desktop app is running during the build, its icon is copied for the widget; otherwise a colored square is shown. Antigravity's icon is read from `Antigravity.exe` at runtime. No logos are included in this repository.
 
-To start the widget with Windows, right-click it and check **Windows 시작 시 실행** (start with Windows), or run:
+To start the widget with Windows, right-click it and check **Start with Windows** (**Windows 시작 시 실행**), or run:
 
 ```powershell
 Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name AiUsageWidget -Value "`"$env:LOCALAPPDATA\AiUsageWidget\AiUsageWidget.exe`""
@@ -100,7 +105,9 @@ If you already use a status line, keep a backup of your `settings.json` before r
 ## Files
 
 ```
-Widget.cs                          The WPF widget
+Widget.cs                          The widget (layout, menu, refresh timers)
+Data.cs                            Data sources: Claude files, Codex app-server, agy
+BWUI/                              Vendored BWUI design system (see BWUI/VERSION)
 StatusLine.cs                      Claude Code status line handler
 build.ps1                          Build and install to %LOCALAPPDATA%\AiUsageWidget
 scheduled-task/claude-limits-task.md   Prompt for the Claude desktop app scheduled task
@@ -114,12 +121,12 @@ Data and settings live in `%LOCALAPPDATA%\AiUsageWidget`:
 | `claude.json` | `AiUsageStatus.exe` (Claude Code status line) |
 | `codex.txt` | The widget (last Codex rate-limit response) |
 | `antigravity.txt` | The widget (last `agy -p /usage` output) |
-| `settings.txt` | The widget (layout, position, shown services) |
+| `settings.txt` | The widget (layout, position, theme, shown services) |
 
 Preview without showing the window:
 
 ```powershell
-& "$env:LOCALAPPDATA\AiUsageWidget\AiUsageWidget.exe" --snapshot preview.png bar   # or ring
+& "$env:LOCALAPPDATA\AiUsageWidget\AiUsageWidget.exe" --snapshot preview.png light        # or: dark, and add "ring" for the ring layout
 ```
 
 ## Uninstall
