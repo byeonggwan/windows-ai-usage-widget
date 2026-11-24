@@ -46,7 +46,41 @@ namespace AiUsageWidget
             return null;
         }
         public static readonly string ClaudeIcon = IOPath.Combine(Dir, "icons", "claude.png");
-        public static readonly string AgyExe = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".gemini", "bin", "agy.exe");
+
+        // The Antigravity CLI lands in different places depending on how it was installed:
+        // the official installer (~\.gemini\bin), the documented user directory (%LOCALAPPDATA%\agy\bin),
+        // winget (a portable package under WinGet\Packages), or anything else on PATH (winget's Links
+        // folder, Chocolatey, Scoop). The Antigravity desktop app does not include it.
+        public static string AgyExe()
+        {
+            var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var candidates = new List<string>
+            {
+                IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".gemini", "bin", "agy.exe"),
+                IOPath.Combine(local, "agy", "bin", "agy.exe"),
+            };
+            foreach (var root in new[] {
+                IOPath.Combine(local, "Microsoft", "WinGet", "Packages"),
+                IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinGet", "Packages") })
+            {
+                try
+                {
+                    if (Directory.Exists(root))
+                        foreach (var d in Directory.GetDirectories(root, "Google.AntigravityCLI_*"))
+                            candidates.Add(IOPath.Combine(d, "agy.exe"));
+                }
+                catch { }
+            }
+            foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+            {
+                if (dir.Trim().Length == 0) continue;
+                try { candidates.Add(IOPath.Combine(Environment.ExpandEnvironmentVariables(dir.Trim().Trim('"')), "agy.exe")); }
+                catch { }
+            }
+            foreach (var f in candidates)
+                if (File.Exists(f)) return f;
+            return null;
+        }
         public static readonly string AntigravityExe = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "antigravity", "Antigravity.exe");
     }
 
@@ -276,10 +310,10 @@ namespace AiUsageWidget
             return g;
         }
 
-        public static string RunAgy()
+        public static string RunAgy(string exe)
         {
-            if (!File.Exists(Paths.AgyExe)) return null;
-            var psi = new ProcessStartInfo(Paths.AgyExe, "-p /usage")
+            if (exe == null || !File.Exists(exe)) return null;
+            var psi = new ProcessStartInfo(exe, "-p /usage")
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,

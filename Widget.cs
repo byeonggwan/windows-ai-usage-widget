@@ -201,12 +201,13 @@ namespace AiUsageWidget
             agyBusy = true;
             try
             {
-                if (!File.Exists(Paths.AgyExe))
+                var exe = Paths.AgyExe();
+                if (exe == null)
                 {
-                    Post(() => agyProblem = Bwui.Text.T("agy CLI를 찾을 수 없어요. Antigravity를 설치하면 표시돼요.", "agy CLI not found. Install Antigravity to see its limits."));
+                    Post(() => agyProblem = Bwui.Text.T("agy CLI를 찾을 수 없어요. Antigravity CLI를 설치하면 표시돼요.", "agy CLI not found. Install the Antigravity CLI to see its limits."));
                     return;
                 }
-                var txt = Data.RunAgy();
+                var txt = Data.RunAgy(exe);
                 var gs = txt == null ? null : Data.ParseAgy(txt);
                 if (gs == null || gs.Count == 0)
                 {

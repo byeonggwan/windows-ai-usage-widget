@@ -29,7 +29,7 @@ Built on [BWUI](https://github.com/byeonggwan/bwui), a small design system for W
 - Windows 10 or 11 with .NET Framework 4.x (preinstalled on Windows 10/11)
 - For Claude: the [Claude desktop app](https://claude.ai/download) (Code tab and scheduled tasks), or Claude Code CLI
 - For Codex: the Codex CLI installed with npm (`npm i -g @openai/codex`) or the Codex desktop app running, signed in
-- For Antigravity: the Antigravity CLI `agy` at `%USERPROFILE%\.gemini\bin\agy.exe`, signed in
+- For Antigravity: the Antigravity CLI `agy`, signed in. The Antigravity desktop app alone is not enough. The widget finds `agy.exe` in `%USERPROFILE%\.gemini\bin`, `%LOCALAPPDATA%\agy\bin`, a winget install (`winget install Google.AntigravityCLI`), or anywhere on `PATH`.
 
 You only need the ones you use; hide the others from the right-click menu.
 
