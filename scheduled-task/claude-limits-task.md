@@ -3,7 +3,7 @@
 In the Claude desktop app, open **Scheduled** in the sidebar and create a new task:
 
 - **Name:** AI usage widget — Claude limits
-- **Schedule:** every 30 minutes (cron `*/30 * * * *`)
+- **Schedule:** every hour from 08:00 to 23:00 (cron `0 8-23 * * *`)
 - **Model:** a small model such as Haiku
 - **Permission mode:** one that allows a single PowerShell command without asking (for example Auto), so runs don't stop to ask
 

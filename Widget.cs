@@ -72,6 +72,11 @@ namespace AiUsageWidget
             icAgy = ExeIcon(Paths.AntigravityExe, 64);
 
             ReloadClaude(true);
+            // Preview of a PC where Claude was never set up.
+            if (Bwui.App.IsSnapshot && Array.IndexOf(Bwui.App.SnapshotArgs, "noclaude") >= 0)
+            {
+                snapshotNoClaude = true; claude = new Group { Name = "Claude" }; claudeAt = null;
+            }
             LoadAgyCache();
             LoadCodexCache();
             Render();
@@ -117,6 +122,7 @@ namespace AiUsageWidget
             {
                 showClaude = on; Settings.SetBool("show_claude", on); ReloadClaude(true); Render();
             }));
+            menu.Items.Add(Item(Bwui.Text.T("Claude 연결 설정 (설정 문구 복사)", "Connect Claude (copy setup message)"), CopyClaudeSetup));
             menu.Items.Add(Check(Bwui.Text.T("Codex 표시", "Show Codex"), showCodex, on =>
             {
                 showCodex = on; Settings.SetBool("show_codex", on); Render();
@@ -127,6 +133,40 @@ namespace AiUsageWidget
                 showAgy = on; Settings.SetBool("show_antigravity", on); Render();
                 if (on) ThreadPool.QueueUserWorkItem(_ => FetchAgy());
             }));
+        }
+
+        DateTime? setupCopiedAt;
+        bool snapshotNoClaude;
+
+        // Claude needs a source on each PC: the desktop app's scheduled task (claude-app.json) or the
+        // Claude Code status line (claude.json). Neither exists until it is set up once.
+        bool ClaudeConnected
+        {
+            get { return !snapshotNoClaude && (File.Exists(Paths.ClaudeAppJson) || File.Exists(Paths.ClaudeJson)); }
+        }
+
+        void CopyClaudeSetup()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                // The clipboard can be briefly held by another app.
+                try { Clipboard.SetText(ClaudeSetup.Message); setupCopiedAt = DateTime.UtcNow; break; }
+                catch (COMException) { Thread.Sleep(100); }
+            }
+            Render();
+        }
+
+        string ClaudeProblem
+        {
+            get
+            {
+                if (ClaudeConnected) return Bwui.Text.T("다음 갱신 때 표시돼요", "Shown after the next update");
+                if (setupCopiedAt.HasValue && DateTime.UtcNow - setupCopiedAt.Value < TimeSpan.FromMinutes(15))
+                    return Bwui.Text.T("설정 문구를 복사했어요. Claude 앱의 새 대화에 붙여 넣고 보내 주세요.",
+                        "Setup message copied. Paste it into a new chat in the Claude app and send it.");
+                return Bwui.Text.T("Claude 연결이 필요해요. 우클릭 → Claude 연결 설정",
+                    "Claude isn't connected. Right-click → Connect Claude");
+            }
         }
 
         static string LayoutLabel { get { return Bwui.Text.T("디자인 전환 (막대 / 원형)", "Switch layout (bars / rings)"); } }
@@ -264,7 +304,7 @@ namespace AiUsageWidget
             {
                 AddSection(sp, Section(icClaude, "Claude", p.Accent(ClaudeL, ClaudeD), new List<Group> { claude }, false,
                     Freshness.Of(claudeAt, TimeSpan.FromMinutes(75), TimeSpan.FromHours(6)),
-                    claudeAt == null ? Bwui.Text.T("다음 갱신 때 표시돼요", "Shown after the next update") : null, false, first));
+                    claudeAt == null ? ClaudeProblem : null, false, first));
                 first = false;
             }
             if (showCodex)

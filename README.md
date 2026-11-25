@@ -81,12 +81,18 @@ Claude's plan limits are not written to disk by any official tool, so pick one o
 
 **Option A — Claude desktop app scheduled task (recommended if you mostly use the desktop app)**
 
-Create a scheduled task in the Claude desktop app that asks Claude to read your plan usage and save it to `%LOCALAPPDATA%\AiUsageWidget\claude-app.json`. The prompt is in [`scheduled-task/claude-limits-task.md`](scheduled-task/claude-limits-task.md).
+A scheduled task in the Claude desktop app reads your plan usage and saves it to `%LOCALAPPDATA%\AiUsageWidget\claude-app.json`. It uses the app's own sign-in, so it stays connected as long as the app does. Set it up once on each PC:
 
-- Use a small model (for example Haiku) and a relaxed schedule such as every 30 minutes.
+1. Right-click the widget and choose **Connect Claude** (**Claude 연결 설정**). A setup message is copied to the clipboard.
+2. Paste it into a new chat in the Claude desktop app and send it. Claude creates the task (hourly from 08:00 to 23:00, on a Haiku model) and runs it once.
+
+To set it up by hand instead, use the prompt in [`scheduled-task/claude-limits-task.md`](scheduled-task/claude-limits-task.md).
+
+- An hourly schedule is enough: the widget marks Claude numbers stale only after 75 minutes.
 - Each run is a short Claude session, so it uses a little of your plan usage. In testing, one run took about 8 seconds and did not move the usage percentage.
 - Runs only happen while the desktop app is open.
-- The app delays recurring runs by a few minutes to spread load. If you want runs near :00 and :30, schedule them a few minutes earlier (the task list shows the delay).
+- The app delays recurring runs by a few minutes to spread load (the task list shows the delay).
+- Until a source is set up, the widget shows **Claude isn't connected** instead of numbers.
 
 **Option B — Claude Code CLI status line**
 

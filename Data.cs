@@ -50,6 +50,49 @@ namespace AiUsageWidget
         public static readonly string AntigravityExe = IOPath.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "antigravity", "Antigravity.exe");
     }
 
+    /// <summary>
+    /// What "Connect Claude" copies: a message for the Claude desktop app that sets up the scheduled task
+    /// writing claude-app.json. Each PC needs it once; it uses the app's own sign-in and no tokens leave the app.
+    /// Keep the task prompt in sync with scheduled-task/claude-limits-task.md.
+    /// </summary>
+    static class ClaudeSetup
+    {
+        public const string TaskPrompt =
+@"This is a tiny, mechanical job. Keep it as short as possible: exactly two tool calls, no plan, no task list, no wrap-up, no extra text.
+
+1. Call the tool mcp__ccd_session_mgmt__get_usage with no arguments. (If it is only listed as a deferred tool, load it first with ToolSearch query ""select:mcp__ccd_session_mgmt__get_usage"".)
+2. Save only the ""plan"" object from its result, verbatim as JSON, with one PowerShell call:
+
+Set-Content -Encoding utf8 -Path ""$env:LOCALAPPDATA\AiUsageWidget\claude-app.json"" -Value @'
+{""plan"": <the plan object exactly as returned>}
+'@
+
+The closing '@ must be at the start of its own line. Do not read, create, or change any other file. Then reply with the single word: ok";
+
+        public static string Message
+        {
+            get
+            {
+                return
+@"Set up the Claude usage feed for my AI usage desktop widget (github.com/byeonggwan/windows-ai-usage-widget).
+
+Use your scheduled-tasks tools to create a scheduled task, or update it if one with this ID already exists:
+- taskId: ai-usage-widget-claude-limits
+- title: 위젯용 Claude 한도 갱신
+- description: Saves Claude plan usage (5-hour and weekly limits) to a file for the desktop usage widget.
+- schedule: cron ""0 8-23 * * *"" (every hour on the hour, 08:00-23:00 local time)
+- model: the smallest Haiku model available
+- prompt: the text between the two lines of dashes below, exactly as written.
+
+----------
+" + TaskPrompt + @"
+----------
+
+Then run the task once now, check that %LOCALAPPDATA%\AiUsageWidget\claude-app.json was written, and tell me the result in one line. If its runs would stop to ask for permission before the PowerShell call, tell me how to allow that.";
+            }
+        }
+    }
+
     static class Data
     {
         static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
